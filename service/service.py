@@ -7,4 +7,4 @@ class Service:
         self.serviceAI = serviceAI
 
     def get_teeths(self,image):
-        return self.serviceAI.get_theets(image)
+        return self.serviceAI.get_teeths(image)
