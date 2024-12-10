@@ -17,7 +17,7 @@ issueModelPath = "C:\\Users\\40753\\source\\Facultate\\Semestrul_5\\MetodeInteli
 
 # Instantiate the AiService with the models
 serviceAI = AiService(teethModelPath, issueModelPath)
-service = Service(AiService)
+service = Service(serviceAI)
 @app.route('/')
 def index():
     return render_template('index.html')  # Serve the main page
