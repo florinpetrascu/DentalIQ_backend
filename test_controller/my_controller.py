@@ -7,8 +7,8 @@ issueModelPath = "C:\\Users\\40753\\source\\Facultate\\Semestrul_5\\MetodeInteli
 
 try:
     # Open the image file
-    image = Image.open("C:\\Users\\40753\\source\\Facultate\\Semestrul_5\\MetodeInteligente\\Project\\dental_yolo\\train\\images\\15.jpg")
-    image.show()  # Display the image
+    image = Image.open("C:\\Users\\40753\\source\\Facultate\\Semestrul_5\\MetodeInteligente\\Project\\dental_yolo\\train\\images\\95.jpg")
+    #image.show()  # Display the image
     print(f"Image format: {image.format}")
     print(f"Image size: {image.size}")
     print(f"Image mode: {image.mode}")
