@@ -64,8 +64,8 @@ def upload_img():
         # Encode the image as base64
         encoded_image = base64.b64encode(img_io.getvalue()).decode('utf-8')
 
-        print("encoded_image ",encoded_image)
-        print("theeth_data ",teeth_data)
+        #print("encoded_image ",encoded_image)
+        #print("theeth_data ",teeth_data)
         # Return the processed image and teeth data
         return jsonify({
             "image": encoded_image,  # Base64 encoded image
