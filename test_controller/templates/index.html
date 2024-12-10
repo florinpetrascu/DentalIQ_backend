@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Processor</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    input[type="file"] {
+      margin: 20px 0;
+    }
+
+    #canvas-container {
+      position: relative;
+      display: inline-block;
+    }
+
+    #output-image, #teeth-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    canvas {
+      max-width: 100%;
+      height: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>Image Processor</h1>
+  <input type="file" id="file-input" accept="image/*">
+  <br>
+  <button id="upload-btn">Upload and Process</button>
+  <div style="position: relative; display: inline-block;">
+    <canvas id="polygon-overlay" style="position: absolute; top: 0; left: 0;"></canvas>
+    <img id="output-image" alt="Processed image will appear here">
+  </div>
+
+<script>
+  const uploadButton = document.getElementById('upload-btn');
+  const fileInput = document.getElementById('file-input');
+  const outputImage = document.getElementById('output-image');
+  const canvas = document.getElementById('polygon-overlay');
+  const ctx = canvas.getContext('2d');
+
+  // Functia pentru a desena poligoanele
+  function drawPolygons(teethData, width, height) {
+    canvas.width = width;
+    canvas.height = height;
+
+    teethData.forEach(tooth => {
+        const polygon = tooth.polygon;
+
+        // Desenează fiecare poligon
+        ctx.beginPath();
+        ctx.moveTo(polygon[0][0], polygon[0][1]);
+        polygon.forEach(([x, y]) => {
+            ctx.lineTo(x, y);
+        });
+        ctx.closePath();
+
+        // Setează stilurile pentru poligoane
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.fill();
+        ctx.strokeStyle = 'black';
+        ctx.stroke();
+    });
+  }
+
+  uploadButton.addEventListener('click', async () => {
+    const file = fileInput.files[0];
+
+    if (!file) {
+      alert('Please select a file to upload.');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await fetch('http://127.0.0.1:5000/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to process image');
+      }
+
+      const data = await response.json();
+      console.log(data); // Verificăm răspunsul serverului
+
+      const base64Image = data.image;
+      const teethData = data.teeth;
+
+      if (base64Image) {
+        // Afișează imaginea
+        const image = new Image();
+        image.src = `data:image/png;base64,${base64Image}`;
+        image.onload = () => {
+          console.log('Imagine încărcată');
+          outputImage.src = image.src;
+          outputImage.width = image.width / 2; // Redimensionează imaginea
+          outputImage.height = image.height / 2;
+
+          // Potrivește dimensiunile canvas-ului cu imaginea
+          canvas.width = image.width / 2;
+          canvas.height = image.height / 2;
+
+          // Desenează poligoane și creează butoane
+          drawPolygons(teethData, canvas.width, canvas.height);
+        };
+      } else {
+        alert('Nu am primit o imagine validă!');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error processing the image.');
+    }
+  });
+</script>
+
+</body>
+</html>
