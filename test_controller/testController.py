@@ -39,7 +39,7 @@ def upload_img():
         original_height, original_width = original_image.shape[:2]
 
         # Process the image using get_teeths
-        teeth_list = service.get_teeths(image)
+        teeth_list = service.get_tooth(image)
 
         # Generate masks and overlay them
         overlay = original_image.copy()
