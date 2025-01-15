@@ -1,10 +1,15 @@
+
 from ultralytics import YOLO
+
+from domain.issue import Issue
 from domain.teeth import Teeth
 from PIL import Image
-from shapely.geometry import Polygon, box
-
+from shapely.geometry import Polygon, Point , LineString
+import random
+from matplotlib import pyplot as plt
 import numpy as np
 import cv2
+
 class AiService:
     def __init__(self, model1_path, model2_path):
           # Assuming you're using YOLO models
@@ -28,11 +33,71 @@ class AiService:
             13: 'Surgical device'
         }
 
+
     def teeth_predict(self, image_path):
         return self.model1.predict(source=image_path)
 
     def issue_predict(self, image_path):
         return self.model2.predict(source=image_path)
+
+    import cv2
+    import numpy as np
+    import random
+    from matplotlib import pyplot as plt
+
+    def display_predictions(self, image, result):
+        """
+        Afișează bounding box-urile și etichetele pe imagine cu culori diferite pentru fiecare clasă.
+
+        Args:
+            image: Imaginea originală (format PIL sau numpy array).
+            result: Rezultatele predicției YOLO (Ultralytics).
+            issue_labels: Lista etichetelor claselor (ex. ["class1", "class2", ...]).
+        """
+        # Convertim imaginea într-un format OpenCV dacă e PIL
+        if not isinstance(image, np.ndarray):
+            image = np.array(image)
+
+        # Generăm culori unice pentru fiecare clasă
+
+
+
+        boxes = result[0].boxes  # Obține toate bounding box-urile
+
+        colors = {class_id: [random.randint(0, 255) for _ in range(3)] for class_id in range(len(boxes))}
+
+        for i in range(len(boxes)):
+            x_min, y_min, x_max, y_max = map(int, boxes.xyxy[i].tolist())  # Coordonate bbox
+            class_id = int(boxes.cls[i].item())  # Clasa prezisă
+            confidence = boxes.conf[i].item()  # Confidența predicției
+
+            # Numele clasei prezise
+            label = f"{class_id} ({confidence:.2f})"
+            color = colors[class_id]  # Culoarea clasei
+
+            # Desenăm bounding box-ul pe imagine
+            cv2.rectangle(image, (x_min, y_min), (x_max, y_max), color=color, thickness=2)
+
+            # Adăugăm eticheta deasupra bounding box-ului
+            font_scale = 0.5
+            font_thickness = 1
+            text_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, font_scale, font_thickness)[0]
+            text_x, text_y = x_min, y_min - 5  # Poziția textului
+            text_background = (x_min, y_min - text_size[1] - 5, x_min + text_size[0], y_min)
+
+            # Desenăm un fundal pentru text (opțional)
+            cv2.rectangle(image, (text_background[0], text_background[1]),
+                          (text_background[2], text_background[3]), color, -1)
+
+            # Adăugăm textul pe imagine
+            cv2.putText(image, label, (text_x, text_y), cv2.FONT_HERSHEY_SIMPLEX,
+                        font_scale, (255, 255, 255), thickness=font_thickness)
+
+        # Afișăm imaginea folosind Matplotlib (nu blochează execuția)
+        plt.figure(figsize=(10, 10))
+        plt.axis('off')
+        plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+        plt.show()
 
     def scale_coordinates(self,coords, original_shape, processed_shape):
         """
@@ -46,7 +111,6 @@ class AiService:
         ]
         return scaled_coords
 
-    from PIL import Image
 
     def resize_image(self, image, target_size=640):
         """
@@ -80,64 +144,73 @@ class AiService:
         result = self.issue_predict(image)
 
         boxes = result[0].boxes
-
+        result[0].show()
+        #self.display_predictions(image,result)
         # Convertim imaginea într-un format compatibil cu OpenCV
         image_cv = np.array(image)
+        print("teeth list len = ",len(teeth_list))
+
+
 
         # Iterăm prin fiecare dinte
         for tooth in teeth_list:
             if len(tooth.polygon) > 2:
-                tooth_polygon = np.array(tooth.polygon, dtype=np.int32)
-
-                cv2.polylines(
-                    image_cv, [tooth_polygon], isClosed=True, color=(255, 0, 0), thickness=2
-                )
-
-
-                cv2.putText(
-                    image_cv,
-                    str(tooth.name),
-                    (int(tooth_polygon[0][0]), int(tooth_polygon[0][1]) - 10),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    fontScale=0.5,
-                    color=(0, 0, 255),
-                    thickness=1,
-                )
 
                 tooth_polygon_shapely = Polygon(tooth.polygon)
+
+
+
                 for i in range(len(boxes)):
-                    # Obține coordonatele bounding box-ului
-                    x_min, y_min, x_max, y_max = boxes.xyxy[i].tolist()
+                    try:
+                        class_id = int(boxes.cls[i].item())
+                        x_min, y_min, x_max, y_max = boxes.xyxy[i].tolist()
 
-                    bbox = box(x_min, y_min, x_max, y_max)
+                        if class_id == 12 or class_id == 1:
 
-                    # Desenează bounding box-ul
-                    cv2.rectangle(
-                        image_cv,
-                        (int(x_min), int(y_min)),  # Convertește coordonatele în întregi
-                        (int(x_max), int(y_max)),  # Convertește coordonatele în întregi
-                        color=(0, 255, 0),
-                        thickness=2,
-                    )
-                    label = f"Class {self.issue_labels[int(boxes.cls[i].item())]}"
-                    cv2.putText(
-                        image_cv,
-                        label,
-                        (int(x_min),int(y_min) - 10),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        fontScale=0.5,
-                        color=(0, 255, 0),
-                        thickness=1,
-                    )
+                            # Dimensiunea laturii pătratului
+                            square_side = min(x_max - x_min, y_max - y_min)
 
-                    # Calculează aria intersecției
-                    intersection_area = tooth_polygon_shapely.intersection(bbox).area
-                    # Calculează aria poligonului dintelui
-                    tooth_area = tooth_polygon_shapely.area
+                            # Centrul pătratului din stânga
+                            left_center = (x_min + square_side / 2, (y_min + y_max) / 2)
 
-                    # Verifică dacă intersecția este mai mare de 20% din aria poligonului dintelui
-                    if intersection_area > 0.2 * tooth_area:
-                        tooth.addIssue(self.issue_labels[int(boxes.cls[i].item())])
+                            # Centrul pătratului din dreapta
+                            right_center = (x_max - square_side / 2, (y_min + y_max) / 2)
+
+
+
+                            # Creează linia din cele două puncte
+                            line = LineString([left_center, right_center])
+
+
+                            # Verifică intersecția
+                            if tooth_polygon_shapely.intersects(line) or tooth_polygon_shapely.contains(line):
+                                issue = Issue(name=self.issue_labels[class_id])
+                                tooth.addIssue(issue)
+                                print(f"Issue PRR/SD adăugat: {issue.name}")
+
+
+
+                        else:
+
+                            # Calculăm centrul bbox-ului
+                            bbox_center_x = (x_min + x_max) / 2
+                            bbox_center_y = (y_min + y_max) / 2
+                            bbox_center = Point(bbox_center_x, bbox_center_y)
+
+                            # Verificăm dacă centrul bbox-ului este în interiorul poligonului dintelui
+                            if tooth_polygon_shapely.contains(bbox_center):
+                                issue = Issue(name=self.issue_labels[class_id])
+                                tooth.addIssue(issue)
+                                print(f"Issue adăugat: {issue.name}")
+
+
+
+                    except Exception as e:
+                        print(f"A apărut o eroare: {e}")
+
+            print("Dinte procesat:", tooth.name)
+        cv2.imwrite("processed_image.jpg", image_cv)
+        print("load_issues finalizat")
 
 
         #cv2.imshow("Image with Bounding Boxes and Polygons", image_cv)
@@ -154,8 +227,8 @@ class AiService:
         # Rulează modelul pentru detectarea dinților
         result = self.teeth_predict(image)
 
-        result[0].show()
-
+        #result[0].show()
+        #self.display_predictions(image, result)
         teeth_list = []  # List to store Teeth objects
 
         # Extract bounding boxes and segmentation masks
@@ -187,13 +260,15 @@ class AiService:
                 teeth = Teeth(name=class_id, polygon=polygon, issues=[])
                 teeth_list.append(teeth)
 
+        print("get teeths")
 
         self.load_issues(teeth_list,resized_image)
-
         for teeth in teeth_list:
-            teeth.issues = list(set(teeth.issues))
+            # Elimină duplicatele din teeth.issues pe baza numelui (name)
+            unique_issues = {issue.name: issue for issue in teeth.issues}.values()
+            teeth.issues = list(unique_issues)
 
-
+        print('get_teeths_finished')
         return teeth_list
 
 
