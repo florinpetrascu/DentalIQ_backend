@@ -144,7 +144,7 @@ class AiService:
         result = self.issue_predict(image)
 
         boxes = result[0].boxes
-        result[0].show()
+        #result[0].show()
         #self.display_predictions(image,result)
         # Convertim imaginea într-un format compatibil cu OpenCV
         image_cv = np.array(image)

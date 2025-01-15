@@ -34,8 +34,8 @@ print("Calea absolută a bazei de date:", os.path.abspath("dentalIQ.sqlite"))
 # FastAPI app
 app = FastAPI()
 
-teethModelPath = "C:\\Users\\40753\\source\\Facultate\\Semestrul_5\\MetodeInteligente\\Project\\Modele\\SegmentareDateMediciJson\\Yolo11l-seg_20_ep\\best (2).pt"
-issueModelPath = "C:\\Users\\40753\\source\\Facultate\\Semestrul_5\\MetodeInteligente\\Project\\Modele\\DetectieBoliTratamente\\yolov8l_det_20ep\\best (4).pt"
+teethModelPath = "../ai_service/teeth_model.pt"
+issueModelPath = "../ai_service/issues_model.pt"
 
 # Instantiate the AiService with the models
 serviceAI = AiService(teethModelPath, issueModelPath)
@@ -177,5 +177,5 @@ async def image_upload(patient: dict):
 # if __name__ == "__main__":
 #     import uvicorn
 #     uvicorn.run("controller:app", host="127.0.0.1", port=8000, reload=True)
-
-
+#
+#
