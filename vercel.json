@@ -2,11 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "controller.py",
+      "src": "controller/controller.py",
       "use": "@vercel/python"
     }
   ],
   "routes": [
-    { "src": "/(.*)", "dest": "controller.py" }
+    {
+      "src": "/(.*)",
+      "dest": "controller/controller.py"
+    }
   ]
 }
