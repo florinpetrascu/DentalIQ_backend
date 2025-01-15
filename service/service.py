@@ -7,4 +7,6 @@ class Service:
         self.serviceAI = serviceAI
 
     def get_tooth(self, image):
-        return self.serviceAI.get_tooth(image)
+        return self.serviceAI.get_teeths(image)
+
+    #def update_teeths(self , patient_id ,):

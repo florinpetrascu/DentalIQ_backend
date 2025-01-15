@@ -8,5 +8,15 @@
       <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/database/database.db</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
+    <data-source source="LOCAL" name="dentalIQ.sqlite" uuid="8fed55b2-8d44-4d44-9381-27cd76914b92">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:C:\Users\40753\source\Facultate\Semestrul_5\ProiectareaProdInovative\DentalIQ_backend\controller\dentalIQ.sqlite</jdbc-url>
+      <jdbc-additional-properties>
+        <property name="com.intellij.clouds.kubernetes.db.enabled" value="false" />
+      </jdbc-additional-properties>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>
