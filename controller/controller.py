@@ -16,6 +16,7 @@ from domain.teeth import Teeth
 from domain.issue import Issue
 from database.base import Base,engine,get_db
 from service.service import Service
+from models_provider.download_models import download_file
 from dto_utils.dto_utils import get_patient_dto
 from fastapi import APIRouter, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
@@ -25,20 +26,42 @@ import cv2
 import io
 import base64
 
-Base.metadata.create_all(bind=engine)
+
+
+if not Base.metadata.tables:
+    Base.metadata.create_all(bind=engine)
+    print("Tabelele au fost create cu succes!")
+else:
+    print("Tabelele există deja!")
+
+
 # Creează tabelele în baza de date
 print("Tabele detectate:", Base.metadata.tables.keys())
-Base.metadata.create_all(bind=engine)
 print("Tabelele au fost create cu succes!")
 print("Calea absolută a bazei de date:", os.path.abspath("dentalIQ.sqlite"))
+
 # FastAPI app
 app = FastAPI()
 
-teethModelPath = "../ai_service/teeth_model.pt"
-issueModelPath = "../ai_service/issues_model.pt"
+issue_model_url = "https://raw.githubusercontent.com/florinpetrascu/pdm_backend/main/issues_model.pt"
+teeth_model_url = "https://raw.githubusercontent.com/florinpetrascu/pdm_backend/main/teeth_model.pt"
 
+if not os.path.exists("issues_model.pt"):
+    download_file(issue_model_url, "issues_model.pt")
+else:
+    print("Fișierul issues_model.pt există deja. Nu se descarcă din nou.")
+
+if not os.path.exists("teeth_model.pt"):
+    download_file(teeth_model_url, "teeth_model.pt")
+else:
+    print("Fișierul issues_model.pt există deja. Nu se descarcă din nou.")
+
+
+
+issue_model_path = "issues_model.pt"
+teeth_model_path = "teeth_model.pt"
 # Instantiate the AiService with the models
-serviceAI = AiService(teethModelPath, issueModelPath)
+serviceAI = AiService(teeth_model_path, issue_model_path)
 service = Service(serviceAI)
 @app.get("/api/patients")
 def get_all_patients():
@@ -174,8 +197,8 @@ async def image_upload(patient: dict):
 
 
 
-# if __name__ == "__main__":
-#     import uvicorn
-#     uvicorn.run("controller:app", host="127.0.0.1", port=8000, reload=True)
-#
-#
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("controller:app", host="127.0.0.1", port=8000, reload=True)
+
+
