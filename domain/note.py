@@ -12,3 +12,4 @@ class Note(Base):
     tooth_id = Column(Integer, ForeignKey('teeth.id'))
 
     tooth = relationship("Teeth", back_populates="notes")
+    ##mere treaba aici
