@@ -9,12 +9,13 @@ import random
 from matplotlib import pyplot as plt
 import numpy as np
 import cv2
-
+from models_provider.download_models import download_file
+import os
 class AiService:
     def __init__(self, model1_path, model2_path):
           # Assuming you're using YOLO models
-        self.model1 = YOLO(model1_path)  # Load the first model
-        self.model2 = YOLO(model2_path)  # Load the second model
+        self.model1 = model1_path  # Load the first model
+        self.model2 = model2_path # Load the second model
 
         self.issue_labels = {
             0:  'Implant',
@@ -217,9 +218,36 @@ class AiService:
         #cv2.waitKey(0)
         #cv2.destroyAllWindows()
 
+    def load_models(self):
+
+        issue_model_url = "https://raw.githubusercontent.com/florinpetrascu/pdm_backend/main/issues_model.pt"
+        teeth_model_url = "https://raw.githubusercontent.com/florinpetrascu/pdm_backend/main/teeth_model.pt"
+
+        issue_model_path = "issues_model.pt"
+        teeth_model_path = "teeth_model.pt"
+
+        if not os.path.exists("issues_model.pt"):
+            download_file(issue_model_url, "issues_model.pt")
+            self.model2 = YOLO(issue_model_path)
+            print("Fisierul issues_model.pt incarcat cu success")
+        else:
+            print("Fișierul issues_model.pt există deja. Nu se descarcă din nou.")
+
+        if not os.path.exists("teeth_model.pt"):
+            download_file(teeth_model_url, "teeth_model.pt")
+            self.model1 = YOLO(teeth_model_path)
+            print("Fisierul teeth_model.pt incarcat cu success")
+        else:
+            print("Fișierul issues_model.pt există deja. Nu se descarcă din nou.")
+
+
+
 
 
     def get_teeths(self, image):
+
+        self.load_models()
+
         # Run the model on the input image
         # Obține dimensiunea originală a imaginii
         resized_image = self.resize_image(image, target_size=640)
