@@ -25,7 +25,7 @@ import numpy as np
 import cv2
 import io
 import base64
-
+from fastapi.middleware.cors import CORSMiddleware
 
 
 if not Base.metadata.tables:
@@ -43,25 +43,16 @@ print("Calea absolută a bazei de date:", os.path.abspath("dentalIQ.sqlite"))
 # FastAPI app
 app = FastAPI()
 
-issue_model_url = "https://raw.githubusercontent.com/florinpetrascu/pdm_backend/main/issues_model.pt"
-teeth_model_url = "https://raw.githubusercontent.com/florinpetrascu/pdm_backend/main/teeth_model.pt"
+# Permite accesul de oriunde (pentru debugging)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Permite acces de oriunde
+    allow_credentials=True,
+    allow_methods=["*"],  # Permite toate metodele (GET, POST, PUT, DELETE, etc.)
+    allow_headers=["*"],  # Permite toate headerele
+)
 
-if not os.path.exists("issues_model.pt"):
-    download_file(issue_model_url, "issues_model.pt")
-else:
-    print("Fișierul issues_model.pt există deja. Nu se descarcă din nou.")
-
-if not os.path.exists("teeth_model.pt"):
-    download_file(teeth_model_url, "teeth_model.pt")
-else:
-    print("Fișierul issues_model.pt există deja. Nu se descarcă din nou.")
-
-
-
-issue_model_path = "issues_model.pt"
-teeth_model_path = "teeth_model.pt"
-# Instantiate the AiService with the models
-serviceAI = AiService(teeth_model_path, issue_model_path)
+serviceAI = AiService(None, None)
 service = Service(serviceAI)
 @app.get("/api/patients")
 def get_all_patients():
@@ -132,6 +123,7 @@ async def image_upload(patient: dict):
         print('patient_data ',patient_data)
         image_base64 = patient.get("image")
 
+
         if not image_base64:
             raise HTTPException(status_code=400, detail="No image provided in the request")
 
@@ -189,6 +181,8 @@ async def image_upload(patient: dict):
 
         # Returnează imaginea procesată și datele despre dinți
         patientDTO = get_patient_dto(update_patient)
+
+
         return JSONResponse(content=patientDTO)
 
     except Exception as e:
@@ -199,6 +193,6 @@ async def image_upload(patient: dict):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("controller:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("controller:app", host="0.0.0.0", port=8000, reload=True)
 
 
