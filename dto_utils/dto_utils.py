@@ -2,6 +2,42 @@
 
 
 
+import json
+
+def get_patient_dto_for_firebase(patient):
+    patient_dto = {
+        "id": patient.id,
+        "firstName": patient.firstName,
+        "lastName": patient.lastName,
+        "phoneNumber": patient.phoneNumber,
+        "image": patient.image,
+        "teeths": [
+            {
+                "id": tooth.id,
+                "name": tooth.name,
+                "issues": [
+                    {
+                        "id": issue.id,
+                        "name": issue.name,
+
+                    }
+                    for issue in tooth.issues
+                ],
+                "notes": [
+                    {
+                        "id": note.id,
+                        "date": note.date,
+                        "text": note.text
+                    }
+                    for note in tooth.notes
+                ],
+                "polygon": json.dumps(tooth.polygon)  # aici e cheia
+
+            }
+            for tooth in patient.teeth
+        ],
+    }
+    return patient_dto
 
 
 def get_patient_dto(patient):
@@ -26,14 +62,18 @@ def get_patient_dto(patient):
                 "notes": [
                     {
                         "id": note.id,
+                        "date": note.date,
                         "text": note.text
                     }
                     for note in tooth.notes
                 ],
-                "polygon": tooth.polygon
+                "polygon": tooth.polygon  # aici e cheia
 
             }
-            for tooth in patient.teeths
+            for tooth in patient.teeth
         ],
     }
     return patient_dto
+
+# def get_pateint_from_dto(patientDTO):
+

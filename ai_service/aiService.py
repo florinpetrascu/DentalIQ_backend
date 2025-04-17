@@ -1,8 +1,8 @@
 
 from ultralytics import YOLO
 
-from domain.issue import Issue
-from domain.teeth import Teeth
+#from domain.issue import Issue
+#from domain.teeth import Teeth
 from PIL import Image
 from shapely.geometry import Polygon, Point , LineString
 import random
@@ -10,12 +10,16 @@ from matplotlib import pyplot as plt
 import numpy as np
 import cv2
 from models_provider.download_models import download_file
+from domain_f.tooth import Tooth
+from domain_f.issue import Issue
 import os
+
+
 class AiService:
     def __init__(self, model1_path, model2_path):
           # Assuming you're using YOLO models
-        self.model1 = model1_path  # Load the first model
-        self.model2 = model2_path # Load the second model
+        self.model1 = YOLO(model1_path)  # Load the first model
+        self.model2 = YOLO(model2_path)  # Load the second model
 
         self.issue_labels = {
             0:  'Implant',
@@ -185,8 +189,9 @@ class AiService:
 
                             # Verifică intersecția
                             if tooth_polygon_shapely.intersects(line) or tooth_polygon_shapely.contains(line):
-                                issue = Issue(name=self.issue_labels[class_id])
-                                tooth.addIssue(issue)
+                                #issue = Issue(name=self.issue_labels[class_id])
+                                issue = Issue(class_id,self.issue_labels[class_id])
+                                tooth.add_issue(issue)
                                 print(f"Issue PRR/SD adăugat: {issue.name}")
 
 
@@ -200,8 +205,9 @@ class AiService:
 
                             # Verificăm dacă centrul bbox-ului este în interiorul poligonului dintelui
                             if tooth_polygon_shapely.contains(bbox_center):
-                                issue = Issue(name=self.issue_labels[class_id])
-                                tooth.addIssue(issue)
+                                #issue = Issue(name=self.issue_labels[class_id])
+                                issue = Issue(class_id, self.issue_labels[class_id])
+                                tooth.add_issue(issue)
                                 print(f"Issue adăugat: {issue.name}")
 
 
@@ -285,8 +291,12 @@ class AiService:
                 #class_name = self.class_names[class_id]  # Map ID to name
 
                 # Create a Teeth object and add it to the list
-                teeth = Teeth(name=class_id, polygon=polygon, issues=[])
-                teeth_list.append(teeth)
+
+                #teeth = Teeth(name=class_id, polygon=polygon, issues=[])
+
+                tooth = Tooth("4",class_id,polygon)
+
+                teeth_list.append(tooth)
 
         print("get teeths")
 
