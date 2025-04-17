@@ -18,8 +18,8 @@ import os
 class AiService:
     def __init__(self, model1_path, model2_path):
           # Assuming you're using YOLO models
-        self.model1 = YOLO(model1_path)  # Load the first model
-        self.model2 = YOLO(model2_path)  # Load the second model
+        self.model1 = None #YOLO(model1_path)  # Load the first model
+        self.model2 = None #YOLO(model2_path)  # Load the second model
 
         self.issue_labels = {
             0:  'Implant',

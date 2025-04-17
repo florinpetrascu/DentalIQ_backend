@@ -1,7 +1,7 @@
 import os
 
 import firebase_admin
-from firebase_admin import credentials, firestore, storage
+from firebase_admin import credentials, firestore
 
 # cred = credentials.Certificate("./dentaliq-api-firebase-adminsdk-fbsvc-b4bc3a4254.json")
 # firebase_admin.initialize_app(cred)
