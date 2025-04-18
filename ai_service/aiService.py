@@ -6,7 +6,7 @@ from ultralytics import YOLO
 from PIL import Image
 from shapely.geometry import Polygon, Point , LineString
 import random
-from matplotlib import pyplot as plt
+#from matplotlib import pyplot as plt
 import numpy as np
 import cv2
 from models_provider.download_models import download_file
@@ -45,64 +45,60 @@ class AiService:
     def issue_predict(self, image_path):
         return self.model2.predict(source=image_path)
 
-    import cv2
-    import numpy as np
-    import random
-    from matplotlib import pyplot as plt
 
-    def display_predictions(self, image, result):
-        """
-        Afișează bounding box-urile și etichetele pe imagine cu culori diferite pentru fiecare clasă.
-
-        Args:
-            image: Imaginea originală (format PIL sau numpy array).
-            result: Rezultatele predicției YOLO (Ultralytics).
-            issue_labels: Lista etichetelor claselor (ex. ["class1", "class2", ...]).
-        """
-        # Convertim imaginea într-un format OpenCV dacă e PIL
-        if not isinstance(image, np.ndarray):
-            image = np.array(image)
-
-        # Generăm culori unice pentru fiecare clasă
-
-
-
-        boxes = result[0].boxes  # Obține toate bounding box-urile
-
-        colors = {class_id: [random.randint(0, 255) for _ in range(3)] for class_id in range(len(boxes))}
-
-        for i in range(len(boxes)):
-            x_min, y_min, x_max, y_max = map(int, boxes.xyxy[i].tolist())  # Coordonate bbox
-            class_id = int(boxes.cls[i].item())  # Clasa prezisă
-            confidence = boxes.conf[i].item()  # Confidența predicției
-
-            # Numele clasei prezise
-            label = f"{class_id} ({confidence:.2f})"
-            color = colors[class_id]  # Culoarea clasei
-
-            # Desenăm bounding box-ul pe imagine
-            cv2.rectangle(image, (x_min, y_min), (x_max, y_max), color=color, thickness=2)
-
-            # Adăugăm eticheta deasupra bounding box-ului
-            font_scale = 0.5
-            font_thickness = 1
-            text_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, font_scale, font_thickness)[0]
-            text_x, text_y = x_min, y_min - 5  # Poziția textului
-            text_background = (x_min, y_min - text_size[1] - 5, x_min + text_size[0], y_min)
-
-            # Desenăm un fundal pentru text (opțional)
-            cv2.rectangle(image, (text_background[0], text_background[1]),
-                          (text_background[2], text_background[3]), color, -1)
-
-            # Adăugăm textul pe imagine
-            cv2.putText(image, label, (text_x, text_y), cv2.FONT_HERSHEY_SIMPLEX,
-                        font_scale, (255, 255, 255), thickness=font_thickness)
-
-        # Afișăm imaginea folosind Matplotlib (nu blochează execuția)
-        plt.figure(figsize=(10, 10))
-        plt.axis('off')
-        plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-        plt.show()
+    # def display_predictions(self, image, result):
+    #     """
+    #     Afișează bounding box-urile și etichetele pe imagine cu culori diferite pentru fiecare clasă.
+    #
+    #     Args:
+    #         image: Imaginea originală (format PIL sau numpy array).
+    #         result: Rezultatele predicției YOLO (Ultralytics).
+    #         issue_labels: Lista etichetelor claselor (ex. ["class1", "class2", ...]).
+    #     """
+    #     # Convertim imaginea într-un format OpenCV dacă e PIL
+    #     if not isinstance(image, np.ndarray):
+    #         image = np.array(image)
+    #
+    #     # Generăm culori unice pentru fiecare clasă
+    #
+    #
+    #
+    #     boxes = result[0].boxes  # Obține toate bounding box-urile
+    #
+    #     colors = {class_id: [random.randint(0, 255) for _ in range(3)] for class_id in range(len(boxes))}
+    #
+    #     for i in range(len(boxes)):
+    #         x_min, y_min, x_max, y_max = map(int, boxes.xyxy[i].tolist())  # Coordonate bbox
+    #         class_id = int(boxes.cls[i].item())  # Clasa prezisă
+    #         confidence = boxes.conf[i].item()  # Confidența predicției
+    #
+    #         # Numele clasei prezise
+    #         label = f"{class_id} ({confidence:.2f})"
+    #         color = colors[class_id]  # Culoarea clasei
+    #
+    #         # Desenăm bounding box-ul pe imagine
+    #         cv2.rectangle(image, (x_min, y_min), (x_max, y_max), color=color, thickness=2)
+    #
+    #         # Adăugăm eticheta deasupra bounding box-ului
+    #         font_scale = 0.5
+    #         font_thickness = 1
+    #         text_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, font_scale, font_thickness)[0]
+    #         text_x, text_y = x_min, y_min - 5  # Poziția textului
+    #         text_background = (x_min, y_min - text_size[1] - 5, x_min + text_size[0], y_min)
+    #
+    #         # Desenăm un fundal pentru text (opțional)
+    #         cv2.rectangle(image, (text_background[0], text_background[1]),
+    #                       (text_background[2], text_background[3]), color, -1)
+    #
+    #         # Adăugăm textul pe imagine
+    #         cv2.putText(image, label, (text_x, text_y), cv2.FONT_HERSHEY_SIMPLEX,
+    #                     font_scale, (255, 255, 255), thickness=font_thickness)
+    #
+    #     # Afișăm imaginea folosind Matplotlib (nu blochează execuția)
+    #     plt.figure(figsize=(10, 10))
+    #     plt.axis('off')
+    #     plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+    #     plt.show()
 
     def scale_coordinates(self,coords, original_shape, processed_shape):
         """
