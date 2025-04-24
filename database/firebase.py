@@ -1,7 +1,7 @@
-import os
-
-import firebase_admin
-from firebase_admin import credentials, firestore
+# import os
+#
+# import firebase_admin
+# from firebase_admin import credentials, firestore
 
 # cred = credentials.Certificate("./dentaliq-api-firebase-adminsdk-fbsvc-b4bc3a4254.json")
 # firebase_admin.initialize_app(cred)
@@ -27,20 +27,20 @@ from firebase_admin import credentials, firestore
 #     db = firestore.client()
 #
 #     return db
-
-def get_db():
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    cred_path = os.path.join(base_dir, 'dentaliq-api-firebase-adminsdk-fbsvc-b4bc3a4254.json')
-
-    cred = credentials.Certificate(cred_path)
-
-    # Verifică dacă aplicația nu e deja inițializată
-    if not len(firebase_admin._apps):
-        firebase_admin.initialize_app(cred, {
-            'storageBucket': 'dentaliq-api.firebasestorage.app'
-        })
-
-    return firestore.client()
-# db = get_db()
 #
-# print(db)
+# def get_db():
+#     base_dir = os.path.dirname(os.path.abspath(__file__))
+#     cred_path = os.path.join(base_dir, 'dentaliq-api-firebase-adminsdk-fbsvc-b4bc3a4254.json')
+#
+#     cred = credentials.Certificate(cred_path)
+#
+#     # Verifică dacă aplicația nu e deja inițializată
+#     if not len(firebase_admin._apps):
+#         firebase_admin.initialize_app(cred, {
+#             'storageBucket': 'dentaliq-api.firebasestorage.app'
+#         })
+#
+#     return firestore.client()
+# # db = get_db()
+# #
+# # print(db)

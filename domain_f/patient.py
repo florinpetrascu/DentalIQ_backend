@@ -1,7 +1,10 @@
+from sqlalchemy import Column, Integer, String
 
+from database.base import Base
 
 
 class Patient:
+
 
     def __init__(self, id, firstName, lastName, phoneNumber):
         self.id = id
