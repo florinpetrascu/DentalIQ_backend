@@ -25,13 +25,24 @@ from service.service import Service
 # import io
 # import base64
 
-
+from fastapi.middleware.cors import CORSMiddleware
 
 
 
 # FastAPI app
 app = FastAPI()
+origins = [
+    "http://localhost:3000",  # local
+    "https://dental-iq-frontend.vercel.app"  # Vercel frontend
+]
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  # sau ["*"] pentru orice (nu recomandat în producție)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 # Creează o sesiune globală
 session = next(get_db())
 
