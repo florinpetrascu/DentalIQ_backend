@@ -30,8 +30,8 @@ import os
 from fastapi.middleware.cors import CORSMiddleware
 
 from sqlalchemy.orm import Session
-from radiographyController import router as radiography_router
-from patientController import  router as patient_router
+from controller.radiographyController import router as radiography_router
+from controller.patientController import  router as patient_router
 
 # FastAPI app
 app = FastAPI()
