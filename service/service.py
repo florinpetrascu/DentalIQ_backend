@@ -1,4 +1,4 @@
-
+from domain.patient import Patient
 
 
 class Service:
@@ -10,8 +10,9 @@ class Service:
     # def get_tooth(self, image):
     #     return self.serviceAI.get_teeths(image)
 
-    def add_patient(self , patient):
-        return self.patientRepo.add_patient(patient)
+    def add_patient(self , first_name, last_name, phone_number):
+        patient = Patient(first_name = first_name,last_name = last_name, phone_number = phone_number)
+        return self.patientRepo.save(patient)
 
     def get_all_patients(self):
         return self.patientRepo.find_all()

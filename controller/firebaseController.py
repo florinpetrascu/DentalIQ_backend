@@ -1,5 +1,4 @@
-
-
+from domain.patient import Patient
 #from fastapi import FastAPI, HTTPException, UploadFile, File
 
 # from fastapi.responses import JSONResponse
@@ -9,16 +8,16 @@ from repository.patientRepo import PatientRepo
 
 #from repository.repository import Repository
 from database.base import get_db
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI,Depends
 
 #from ai_service.aiService import AiService
 
 from service.service import Service
 
-# from dto_utils.dto_utils import get_patient_dto, get_patient_dto_for_firebase
+from dto_utils.dto_utils import get_patient_dto, get_patient_dto_for_firebase, get_simple_patient_dto
 # from sqlalchemy import create_engine
 # from sqlalchemy.orm import sessionmaker
-# from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse
 # from PIL import Image
 # import numpy as np
 #
@@ -27,6 +26,7 @@ from service.service import Service
 
 from fastapi.middleware.cors import CORSMiddleware
 
+from sqlalchemy.orm import Session
 
 
 # FastAPI app
@@ -44,18 +44,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 # Creează o sesiune globală
-session = next(get_db())
+#session = next(get_db())
 
-repo = PatientRepo(session)
+def get_service(db: Session = Depends(get_db)) -> Service:
+    repo = PatientRepo(db)
+    return Service(repo)
+
+#repo = PatientRepo(session)
 
 issue_model_path = "issues_model.pt"
 teeth_model_path = "teeth_model.pt"
 
 #serviceAI = AiService(teeth_model_path, issue_model_path)
-service = Service(repo)
+#service = Service(repo)
 
 @app.get("/api/patients")
-def get_all_patients():
+def get_all_patients( service: Service = Depends(get_service)):
 
     # Serializare manuală
     result = service.get_all_patients()
@@ -63,18 +67,20 @@ def get_all_patients():
     #return JSONResponse(content=result)
     return result
 
-# @app.post("/api/patients")
-# async def upload_patient(patientDTO: dict):
-#
-#
-#     patient = Patient("nan", patientDTO['firstName'], patientDTO['lastName'], patientDTO['phoneNumber'])
-#
-#     patient = service.add_patient(patient)
-#
-#     newPatientDTO = get_patient_dto(patient)
-#
-#     return JSONResponse(content=newPatientDTO)
-#
+@app.post("/api/patients")
+async def upload_patient(patientDTO: dict,  service: Service = Depends(get_service)):
+
+
+    #patient = Patient("nan", patientDTO['firstName'], patientDTO['lastName'], patientDTO['phoneNumber'])
+
+    patient = service.add_patient(patientDTO['firstName'], patientDTO['lastName'], patientDTO['phoneNumber'])
+
+    newPatientDTO = get_simple_patient_dto(patient)
+
+    return JSONResponse(content=newPatientDTO)
+
+    #return patient
+
 # @app.post("/api/upload")
 # async def image_upload(patient: dict):
 #     try:

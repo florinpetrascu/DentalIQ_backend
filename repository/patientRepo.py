@@ -8,10 +8,12 @@ class PatientRepo:
             self.session = session
 
     # CRUD pentru Patient
-    def create_patient(self,first_name, last_name, phone_number):
-        new_patient = Patient(None, first_name, last_name, phone_number)
+    def save(self,new_patient):
+
         self.session.add(new_patient)
         self.session.commit()
+
+        return new_patient
 
     def get_patient_by_id(self, patient_id):
         return self.session.query(Patient).filter(Patient.id == patient_id).first()

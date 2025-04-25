@@ -75,5 +75,11 @@ def get_patient_dto(patient):
     }
     return patient_dto
 
-# def get_pateint_from_dto(patientDTO):
-
+def get_simple_patient_dto(patient):
+    patient_dto = {
+        "id": patient.id,
+        "first_name": patient.first_name,
+        "last_name": patient.last_name,
+        "phone_number": patient.phone_number,
+    }
+    return patient_dto
