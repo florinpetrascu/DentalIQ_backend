@@ -98,3 +98,4 @@ ADD CONSTRAINT fk_issues_teeth
 FOREIGN KEY (teeth_id)
 REFERENCES teeth(id);
 
+

@@ -132,7 +132,34 @@ async def upload_patient(patientDTO: dict,  service: Service = Depends(get_servi
 #         raise HTTPException(status_code=500, detail=str(e))
 #
 
+from models_provider.download_models import download_file
+
+import os
+def load_models():
+
+        issue_model_url = "https://raw.githubusercontent.com/florinpetrascu/pdm_backend/main/issues_model.pt"
+        teeth_model_url = "https://raw.githubusercontent.com/florinpetrascu/pdm_backend/main/teeth_model.pt"
+
+        issue_model_path = "issues_model.pt"
+        teeth_model_path = "teeth_model.pt"
+
+        if not os.path.exists("issues_model.pt"):
+            download_file(issue_model_url, "issues_model.pt")
+
+            print("Fisierul issues_model.pt incarcat cu success")
+        else:
+            print("Fișierul issues_model.pt există deja. Nu se descarcă din nou.")
+
+        if not os.path.exists("teeth_model.pt"):
+            download_file(teeth_model_url, "teeth_model.pt")
+
+            print("Fisierul teeth_model.pt incarcat cu success")
+        else:
+            print("Fișierul issues_model.pt există deja. Nu se descarcă din nou.")
+
+
 if __name__ == "__main__":
     import uvicorn
     #print(service.get_all_patients())
+    load_models()
     uvicorn.run("firebaseController:app", host="0.0.0.0", port=8000, reload=True)
