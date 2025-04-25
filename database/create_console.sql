@@ -99,3 +99,25 @@ FOREIGN KEY (teeth_id)
 REFERENCES teeth(id);
 
 
+create table radiographs(
+
+    id integer,
+    url varchar,
+    patient_id integer
+
+);
+
+ALTER TABLE notes
+    ALTER COLUMN id TYPE INTEGER;
+
+ALTER TABLE radiographs
+ALTER COLUMN id SET NOT NULL;
+
+ALTER TABLE radiographs
+ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY;
+
+-- radiographs → patients
+ALTER TABLE radiographs
+ADD CONSTRAINT fk_radiographs_patient
+FOREIGN KEY (patient_id)
+REFERENCES patients(id);

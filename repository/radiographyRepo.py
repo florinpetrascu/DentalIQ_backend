@@ -1,0 +1,13 @@
+
+from domain.radiography import Radiography
+
+class RadiographyRepo:
+
+
+    def __init__(self,session):
+            self.session = session
+
+
+    def find_by_patient_id(self, patient_id):
+        return self.session.query(Radiography).filter(Radiography.patient_id == patient_id).first()
+

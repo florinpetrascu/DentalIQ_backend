@@ -27,10 +27,15 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from sqlalchemy.orm import Session
-
+from radiographyController import router as radiography_router
+from patientController import  router as patient_router
 
 # FastAPI app
 app = FastAPI()
+
+app.include_router(radiography_router)
+app.include_router(patient_router)
+
 origins = [
     "http://localhost:3000",  # local
     "https://dental-iq-frontend.vercel.app"  # Vercel frontend
@@ -43,43 +48,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-# Creează o sesiune globală
-#session = next(get_db())
-
-def get_service(db: Session = Depends(get_db)) -> Service:
-    repo = PatientRepo(db)
-    return Service(repo)
-
-#repo = PatientRepo(session)
-
-issue_model_path = "issues_model.pt"
-teeth_model_path = "teeth_model.pt"
-
-#serviceAI = AiService(teeth_model_path, issue_model_path)
-#service = Service(repo)
-
-@app.get("/api/patients")
-def get_all_patients( service: Service = Depends(get_service)):
-
-    # Serializare manuală
-    result = service.get_all_patients()
-
-    #return JSONResponse(content=result)
-    return result
-
-@app.post("/api/patients")
-async def upload_patient(patientDTO: dict,  service: Service = Depends(get_service)):
 
 
-    #patient = Patient("nan", patientDTO['firstName'], patientDTO['lastName'], patientDTO['phoneNumber'])
-
-    patient = service.add_patient(patientDTO['firstName'], patientDTO['lastName'], patientDTO['phoneNumber'])
-
-    newPatientDTO = get_simple_patient_dto(patient)
-
-    return JSONResponse(content=newPatientDTO)
-
-    #return patient
 
 # @app.post("/api/upload")
 # async def image_upload(patient: dict):
