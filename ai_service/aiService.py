@@ -7,7 +7,7 @@ from PIL import Image
 from shapely.geometry import Polygon, Point , LineString
 
 import numpy as np
-# import cv2
+import cv2
 
 
 class AiService:
