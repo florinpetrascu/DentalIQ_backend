@@ -5,13 +5,9 @@ from domain.issue import Issue
 from domain.teeth import Teeth
 from PIL import Image
 from shapely.geometry import Polygon, Point , LineString
-import random
-#from matplotlib import pyplot as plt
+
 import numpy as np
 import cv2
-from models_provider.download_models import download_file
-
-import os
 
 
 class AiService:
