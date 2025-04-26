@@ -121,3 +121,13 @@ ALTER TABLE radiographs
 ADD CONSTRAINT fk_radiographs_patient
 FOREIGN KEY (patient_id)
 REFERENCES patients(id);
+
+
+ALTER TABLE teeth DROP CONSTRAINT un_tth_name;
+
+-- 3. Creezi unul nou cu ON DELETE CASCADE
+ALTER TABLE issues
+ADD CONSTRAINT fk_issues_teeth
+FOREIGN KEY (teeth_id)
+REFERENCES teeth(id)
+ON DELETE CASCADE;

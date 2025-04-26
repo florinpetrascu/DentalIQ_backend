@@ -1,5 +1,4 @@
 
-from database.base import Base
 
 
 class Note:

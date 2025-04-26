@@ -1,8 +1,8 @@
 
 
 
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Text, Table, TIMESTAMP
-from sqlalchemy.orm import relationship, sessionmaker, declarative_base
+from sqlalchemy import Column, Integer,ForeignKey, Text,TIMESTAMP
+
 from database.base import Base
 class Note(Base):
     __tablename__ = 'notes'
@@ -12,5 +12,5 @@ class Note(Base):
     date = Column(TIMESTAMP, nullable=False)
     teeth_id = Column(Integer, ForeignKey('teeth.id'))
 
-    tooth = relationship("Teeth", back_populates="notes")
+    #tooth = relationship("Teeth", back_populates="notes")
     ##mere treaba aici

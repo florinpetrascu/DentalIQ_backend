@@ -1,5 +1,9 @@
 
 from domain.patient import Patient
+from sqlalchemy.orm import joinedload
+
+from domain.teeth import Teeth
+
 
 class PatientRepo:
 
@@ -16,7 +20,14 @@ class PatientRepo:
         return new_patient
 
     def get_patient_by_id(self, patient_id):
-        return self.session.query(Patient).filter(Patient.id == patient_id).first()
+        print("repoPatient1")
+        print(patient_id)
+        return (
+            self.session.query(Patient)
+            .options(joinedload(Patient.teeths).joinedload(Teeth.issues))
+            .filter(Patient.id == patient_id)
+            .first()
+        )
 
     def update_patient(self, patient_id, first_name, last_name, phone_number):
         patient = self.get_patient_by_id(patient_id)

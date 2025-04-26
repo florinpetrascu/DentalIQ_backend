@@ -1,5 +1,5 @@
 
-from database.base import Base
+
 class Tooth:
 
     def __init__(self, id, name, polygon):

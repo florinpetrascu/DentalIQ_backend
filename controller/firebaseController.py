@@ -1,38 +1,14 @@
-from domain.patient import Patient
-#from fastapi import FastAPI, HTTPException, UploadFile, File
 
-# from fastapi.responses import JSONResponse
-#
-# from domain.patient import Patient
-from repository.patientRepo import PatientRepo
-
-#from repository.repository import Repository
-from database.base import get_db
-from fastapi import FastAPI,Depends
-
-#from ai_service.aiService import AiService
-
-from service.service import Service
-
-from dto_utils.dto_utils import get_patient_dto, get_patient_dto_for_firebase, get_simple_patient_dto
-# from sqlalchemy import create_engine
-# from sqlalchemy.orm import sessionmaker
-from fastapi.responses import JSONResponse
-# from PIL import Image
-# import numpy as np
-#
-# import io
-# import base64
+from fastapi import FastAPI
 from models_provider.download_models import download_file
-
 import os
-
 from fastapi.middleware.cors import CORSMiddleware
 
-from sqlalchemy.orm import Session
+
+# de modificat aici pentru deploy!!!!!
 from controller.radiographyController import router as radiography_router
 from controller.patientController import  router as patient_router
-
+from controller.aiTasksController import router as ai_router
 # FastAPI app
 app = FastAPI()
 
@@ -52,7 +28,7 @@ app.add_middleware(
 
 app.include_router(radiography_router)
 app.include_router(patient_router)
-
+app.include_router(ai_router)
 
 
 def load_models():

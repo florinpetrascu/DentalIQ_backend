@@ -1,6 +1,6 @@
 
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Text, Table
-from sqlalchemy.orm import relationship, sessionmaker, declarative_base
+from sqlalchemy import Column, Integer, String, ForeignKey, Text
+from sqlalchemy.orm import relationship
 from database.base import Base
 
 
@@ -10,13 +10,12 @@ class Teeth(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     polygon = Column(Text, nullable=True)
-    patient_id = Column(Integer, ForeignKey('patients.id'), nullable=False)  # Cheie străină
+    patient_id = Column(Integer, ForeignKey('patients.id', ondelete="CASCADE"), nullable=True)  # Cheie străină
 
-    #patient = relationship("Patient", back_populates="teeths")
-    issues = relationship("Issue", back_populates="tooth")
-    notes = relationship("Note", back_populates="tooth")
+    issues = relationship("Issue", back_populates="tooth", cascade="all, delete-orphan")
+    #notes = relationship("Note", back_populates="tooth", cascade="all, delete-orphan")
 
-    def addIssue(self,issue):
+    def add_issue(self,issue):
         self.issues.append(issue)
 
     def __repr__(self):

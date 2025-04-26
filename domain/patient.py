@@ -13,8 +13,10 @@ class Patient(Base):
     last_name = Column(String, nullable=False)
     phone_number = Column(String, nullable=False)
 
-    #teeths = relationship("Teeth", back_populates="patient")
+    teeths = relationship("Teeth", backref="patient", cascade="all, delete-orphan")
 
+    def addTooth(self,tooth):
+        self.teeths.append(tooth)
     def __str__(self):
         return f"Patient {self.id}: {self.first_name} {self.last_name}, Phone: {self.phone_number}"
 

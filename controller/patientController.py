@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 
-from dto_utils.dto_utils import get_simple_patient_dto
+from dto_utils.dto_utils import get_simple_patient_dto, get_patient_dto
 from service.patientService import PatientService
 from repository.patientRepo import PatientRepo
 from database.base import get_db
@@ -35,3 +35,16 @@ async def upload_patient(patientDTO: dict,  service: PatientService = Depends(ge
     return JSONResponse(content=newPatientDTO)
 
     #return patient
+
+@router.get("/{patient_id}")
+def get_patient(patient_id: int, service: PatientService = Depends(get_patient_service)):
+    patient = service.get_patient_by_id(patient_id)
+    if not patient:
+        print("Eroare aici")
+        raise HTTPException(status_code=404, detail="Patient not found")
+
+    patientDTO = get_patient_dto(patient)
+
+    print(patientDTO)
+
+    return JSONResponse(content=patientDTO)

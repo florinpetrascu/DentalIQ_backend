@@ -3,7 +3,7 @@
 
 
 import json
-
+import re
 def get_patient_dto_for_firebase(patient):
     patient_dto = {
         "id": patient.id,
@@ -43,10 +43,9 @@ def get_patient_dto_for_firebase(patient):
 def get_patient_dto(patient):
     patient_dto = {
         "id": patient.id,
-        "firstName": patient.firstName,
-        "lastName": patient.lastName,
-        "phoneNumber": patient.phoneNumber,
-        "image": patient.image,
+        "first_name": patient.first_name,
+        "last_name": patient.last_name,
+        "phone_number": patient.phone_number,
         "teeths": [
             {
                 "id": tooth.id,
@@ -59,18 +58,18 @@ def get_patient_dto(patient):
                     }
                     for issue in tooth.issues
                 ],
-                "notes": [
-                    {
-                        "id": note.id,
-                        "date": note.date,
-                        "text": note.text
-                    }
-                    for note in tooth.notes
-                ],
-                "polygon": tooth.polygon  # aici e cheia
+                # "notes": [
+                #     {
+                #         "id": note.id,
+                #         "date": note.date,
+                #         "text": note.text
+                #     }
+                #     for note in tooth.notes
+                # ],
+                "polygon": json.dumps([list(map(int, pair)) for pair in re.findall(r'\{(\d+),(\d+)\}', tooth.polygon)] ) # aici e cheia
 
             }
-            for tooth in patient.teeth
+            for tooth in patient.teeths
         ],
     }
     return patient_dto

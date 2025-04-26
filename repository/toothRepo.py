@@ -12,6 +12,9 @@ class TeethRepo:
         self.session.add(new_teeth)
         self.session.commit()
 
+    def find_by_patient_id(self, patient_id):
+        return self.session.query(Teeth).filter(Teeth.patient_id == patient_id)
+
     def get_teeth_by_id(self, teeth_id):
         return self.session.query(Teeth).filter(Teeth.id == teeth_id).first()
 
@@ -23,8 +26,10 @@ class TeethRepo:
             teeth.patient_id = patient_id
             self.session.commit()
 
-    def delete_teeth(self, teeth_id):
-        teeth = self.get_teeth_by_id(teeth_id)
-        if teeth:
-            self.session.delete(teeth)
-            self.session.commit()
+    def delete_by_patient_id(self, patient_id):
+
+        self.session.query(Teeth).filter(Teeth.patient_id == patient_id).delete()
+
+    def save(self,tooth):
+        self.session.add(tooth)
+        self.session.commit()
