@@ -1,0 +1,18 @@
+# Ignorăm venv local
+venv/
+
+# Ignorăm cache Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignorăm environment files
+.env
+
+# Ignorăm SQLite (dacă ai)
+db.sqlite3
+
+# Ignorăm fișiere temporare de IDE
+.idea/
+.vscode/
