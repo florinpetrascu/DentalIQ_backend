@@ -40,13 +40,13 @@ class AiTasksService:
         return f"{blob.public_url}?t={int(timestamp)}"
 
     def analyse_panoramic_xray(self, image, patient_id):
-        print("aici3")
+
         #aducem pacientul din baza de date
         patient = self.patientRepo.get_patient_by_id(patient_id)
-        print("aici4")
+
         #salvam imaginea
         url = self.save_image_to_firebase(image, patient.last_name, patient.first_name)
-        print("aici5")
+
         #aplicam AI pe imagine si obtinem lista de dinti
         teeth_list = self.aiService.get_teeths(image)
 

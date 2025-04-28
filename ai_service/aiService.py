@@ -8,13 +8,14 @@ from shapely.geometry import Polygon, Point , LineString
 
 import numpy as np
 import cv2
-
+from ai_service.teethDetectorOnnx import  TeethDetectorONNX
 
 class AiService:
     def __init__(self, teeth_model_path, issue_model_path):
           # Assuming you're using YOLO models
         self.teeth_model = YOLO(teeth_model_path)  # Load the first model
         self.issues_model = YOLO(issue_model_path)  # Load the second model
+        self.teethDetector = TeethDetectorONNX('teeth_model.onnx')
 
         self.issue_labels = {
             0:  'Implant',
@@ -41,59 +42,6 @@ class AiService:
         return self.issues_model.predict(source=image_path)
 
 
-    # def display_predictions(self, image, result):
-    #     """
-    #     Afișează bounding box-urile și etichetele pe imagine cu culori diferite pentru fiecare clasă.
-    #
-    #     Args:
-    #         image: Imaginea originală (format PIL sau numpy array).
-    #         result: Rezultatele predicției YOLO (Ultralytics).
-    #         issue_labels: Lista etichetelor claselor (ex. ["class1", "class2", ...]).
-    #     """
-    #     # Convertim imaginea într-un format OpenCV dacă e PIL
-    #     if not isinstance(image, np.ndarray):
-    #         image = np.array(image)
-    #
-    #     # Generăm culori unice pentru fiecare clasă
-    #
-    #
-    #
-    #     boxes = result[0].boxes  # Obține toate bounding box-urile
-    #
-    #     colors = {class_id: [random.randint(0, 255) for _ in range(3)] for class_id in range(len(boxes))}
-    #
-    #     for i in range(len(boxes)):
-    #         x_min, y_min, x_max, y_max = map(int, boxes.xyxy[i].tolist())  # Coordonate bbox
-    #         class_id = int(boxes.cls[i].item())  # Clasa prezisă
-    #         confidence = boxes.conf[i].item()  # Confidența predicției
-    #
-    #         # Numele clasei prezise
-    #         label = f"{class_id} ({confidence:.2f})"
-    #         color = colors[class_id]  # Culoarea clasei
-    #
-    #         # Desenăm bounding box-ul pe imagine
-    #         cv2.rectangle(image, (x_min, y_min), (x_max, y_max), color=color, thickness=2)
-    #
-    #         # Adăugăm eticheta deasupra bounding box-ului
-    #         font_scale = 0.5
-    #         font_thickness = 1
-    #         text_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, font_scale, font_thickness)[0]
-    #         text_x, text_y = x_min, y_min - 5  # Poziția textului
-    #         text_background = (x_min, y_min - text_size[1] - 5, x_min + text_size[0], y_min)
-    #
-    #         # Desenăm un fundal pentru text (opțional)
-    #         cv2.rectangle(image, (text_background[0], text_background[1]),
-    #                       (text_background[2], text_background[3]), color, -1)
-    #
-    #         # Adăugăm textul pe imagine
-    #         cv2.putText(image, label, (text_x, text_y), cv2.FONT_HERSHEY_SIMPLEX,
-    #                     font_scale, (255, 255, 255), thickness=font_thickness)
-    #
-    #     # Afișăm imaginea folosind Matplotlib (nu blochează execuția)
-    #     plt.figure(figsize=(10, 10))
-    #     plt.axis('off')
-    #     plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-    #     plt.show()
 
     def scale_coordinates(self,coords, original_shape, processed_shape):
         """
@@ -267,11 +215,17 @@ class AiService:
                 # Get the polygon (contour) of the mask
                 mask = masks.data[i].numpy()
 
+                print(mask)
+
+
                 contours, _ = cv2.findContours(mask.astype('uint8'), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
+                print(contours)
                 # Choose the largest contour as the polygon (in case of multiple)
                 if contours:
                     polygon = max(contours, key=cv2.contourArea).squeeze().tolist()
+
+                    print(polygon)
 
                 else:
                     polygon = []
@@ -289,7 +243,14 @@ class AiService:
 
                 teeth_list.append(tooth)
 
-        print("get teeths")
+        print("get teeths yolo")
+        print(teeth_list)
+        print("get teeths onnx")
+        print("input names")
+        print(self.teethDetector.input_name)
+        print("output names")
+        print(self.teethDetector.output_names)
+        self.teethDetector.detect_teeths(image)
 
         self.load_issues(teeth_list,resized_image)
         for teeth in teeth_list:
@@ -302,3 +263,5 @@ class AiService:
 
 
 #Theets  [Teeth(name=31, issues=['Prosthetic restoration']), Teeth(name=29, issues=['Prosthetic restoration']), Teeth(name=6, issues=['Prosthetic restoration']), Teeth(name=7, issues=['Endodontic treatment', 'Prosthetic restoration']), Teeth(name=24, issues=[]), Teeth(name=27, issues=[]), Teeth(name=28, issues=[]), Teeth(name=9, issues=[]), Teeth(name=21, issues=[]), Teeth(name=8, issues=[]), Teeth(name=20, issues=[]), Teeth(name=4, issues=['Prosthetic restoration']), Teeth(name=5, issues=['Prosthetic restoration']), Teeth(name=1, issues=['Impacted tooth']), Teeth(name=3, issues=['Prosthetic restoration']), Teeth(name=10, issues=['Prosthetic restoration']), Teeth(name=23, issues=[]), Teeth(name=14, issues=['Prosthetic restoration']), Teeth(name=22, issues=[]), Teeth(name=13, issues=['Prosthetic restoration']), Teeth(name=18, issues=[]), Teeth(name=13, issues=['Prosthetic restoration']), Teeth(name=15, issues=[]), Teeth(name=11, issues=['Prosthetic restoration']), Teeth(name=12, issues=['Prosthetic restoration']), Teeth(name=25, issues=[]), Teeth(name=10, issues=['Prosthetic restoration']), Teeth(name=2, issues=['Prosthetic restoration']), Teeth(name=14, issues=['Prosthetic restoration']), Teeth(name=26, issues=[]), Teeth(name=30, issues=['Prosthetic restoration'])]
+
+
