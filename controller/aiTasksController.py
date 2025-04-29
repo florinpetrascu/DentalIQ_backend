@@ -22,7 +22,7 @@ def get_ai_tasks_service(db: Session = Depends(get_db)) -> AiTasksService:
     tooth_repo = TeethRepo(db)
     issue_repo = IssuesRepo(db)
     radiography_repo = RadiographyRepo(db)
-    ai_service = AiServiceOnnx("controller/teeth_model.onnx","controller/issues_model.onnx")
+    ai_service = AiServiceOnnx("./controller/teeth_model.onnx","./controller/issues_model.onnx")
     #ai_service = AiService("teeth_model.pt", "issues_model.pt")
 
     return AiTasksService(ai_service,patient_repo,tooth_repo,issue_repo,radiography_repo)
