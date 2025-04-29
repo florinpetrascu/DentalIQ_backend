@@ -165,7 +165,7 @@ class TeethDetectorONNX:
 
             print(teeth)
 
-        img.show()
+        #img.show()
 
         return teeth_list
 

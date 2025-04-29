@@ -123,7 +123,7 @@ class IssueDetectorONNX:
             draw.rectangle([x1, y1, x2, y2], outline="red", width=2)
             draw.text((x1, y1), f"{label} {prob:.2f}", fill="red")
 
-        img.show()
+        #img.show()
 
 
         return result
