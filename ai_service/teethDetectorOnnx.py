@@ -4,7 +4,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 import cv2
 from domain.teeth import Teeth
-import ast
+
 class TeethDetectorONNX:
     def __init__(self, model_path):
         self.session = ort.InferenceSession(model_path)
