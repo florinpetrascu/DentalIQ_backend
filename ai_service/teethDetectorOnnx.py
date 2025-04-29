@@ -1,166 +1,188 @@
 
 import onnxruntime as ort
 import numpy as np
+from PIL import Image, ImageDraw
 import cv2
 from domain.teeth import Teeth
+import ast
 class TeethDetectorONNX:
     def __init__(self, model_path):
         self.session = ort.InferenceSession(model_path)
         self.input_name = self.session.get_inputs()[0].name
         self.output_names = [output.name for output in self.session.get_outputs()]
-
-    def preprocess(self, image, target_size=640):
-        image = np.array(image)
-        # Resize and normalize
-        print("preprocess")
-        resized = cv2.resize(image, (target_size, target_size))
-        print("preprocess1")
-        resized = resized.astype(np.float32) / 255.0
-        print("preprocess2")
-        resized = np.transpose(resized, (2, 0, 1))  # channels first
-        print("preprocess3")
-        resized = np.expand_dims(resized, axis=0)  # batch dim
-        print("preprocess4")
-        return resized, image.shape[1], image.shape[0]  # also return original width, height
-
-    def postprocess(self, outputs, orig_w, orig_h, conf_thres=0.2):
-        preds = outputs[0]  # (1, 88, 8400)
-        mask_protos = outputs[1]  # (1, 32, 160, 160)
-        num_classes = 52  # <- ⚡ adaugă aici câte clase ai
-
-        preds = preds[0]  # (88, 8400)
-        mask_protos = mask_protos[0]  # (32, 160, 160)
-
-        preds = preds.transpose(1, 0)  # (8400, 88)
-
-        print("preds0 = ",preds[0],"len = ",len(preds[0]))
-
-        print("preds1 = ",preds[1],"len = ",len(preds[1]))
-        bbox = preds[:, :4]
-        class_probs = preds[:, 4:4 + num_classes]
-        mask_coeffs = preds[:, 4 + num_classes:]
-        print("bbox len ",len(bbox))
-        print("class_probs len", len(class_probs[0]))
+        self.yolo_classes = [
+            "1", "2", "3", "4", "5", "6", "7", "8",
+            "9", "10", "11", "12", "13", "14", "15", "16",
+            "17", "18", "19", "20", "21", "22", "23", "24",
+            "25", "26", "27", "28", "29", "30", "31", "32",
+            "A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
+            "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T"
+        ]
 
 
+    def intersection(self, box1, box2):
+        box1_x1, box1_y1, box1_x2, box1_y2 = box1[:4]
+        box2_x1, box2_y1, box2_x2, box2_y2 = box2[:4]
+        x1 = max(box1_x1, box2_x1)
+        y1 = max(box1_y1, box2_y1)
+        x2 = min(box1_x2, box2_x2)
+        y2 = min(box1_y2, box2_y2)
+        return (x2 - x1) * (y2 - y1)
+
+    def union(self, box1, box2):
+        box1_x1, box1_y1, box1_x2, box1_y2 = box1[:4]
+        box2_x1, box2_y1, box2_x2, box2_y2 = box2[:4]
+        box1_area = (box1_x2 - box1_x1) * (box1_y2 - box1_y1)
+        box2_area = (box2_x2 - box2_x1) * (box2_y2 - box2_y1)
+        return box1_area + box2_area - self.intersection(box1, box2)
+
+    def iou(self, box1, box2):
+        return self.intersection(box1, box2) / self.union(box1, box2)
+
+    def sigmoid(self, z):
+        return 1 / (1 + np.exp(-z))
+
+    # parse segmentation mask
+    def get_mask(self, row, box, img_width, img_height):
+        # convert mask to image (matrix of pixels)
+        mask = row.reshape(160, 160)
+        mask = self.sigmoid(mask)
+        mask = (mask > 0.5).astype("uint8") * 255
+        # crop the object defined by "box" from mask
+        x1, y1, x2, y2 = box
+        mask_x1 = round(x1 / img_width * 160)
+        mask_y1 = round(y1 / img_height * 160)
+        mask_x2 = round(x2 / img_width * 160)
+        mask_y2 = round(y2 / img_height * 160)
+        mask = mask[mask_y1:mask_y2, mask_x1:mask_x2]
+        # resize the cropped mask to the size of object
+        img_mask = Image.fromarray(mask, "L")
+        img_mask = img_mask.resize((round(x2 - x1), round(y2 - y1)))
+        mask = np.array(img_mask)
+        return mask
+
+    # calculate bounding polygon from mask
+    def get_polygon(self, mask):
+        contours = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+        polygon = [[contour[0][0], contour[0][1]] for contour in contours[0][0]]
+        return polygon
+
+    def scale_polygon_to_640(self, polygon, img_width, img_height):
+        scale_x = 640 / img_width
+        scale_y = 640 / img_height
+        scaled_polygon = [(int(x * scale_x), int(y * scale_y)) for (x, y) in polygon]
+        return scaled_polygon
+
+    def preprocess(self, img):
+        img_width, img_height = img.size
+        img = img.convert("RGB")
+        img = img.resize((640, 640))
+
+        input = np.array(img)
+        input = input.transpose(2, 0, 1)
+        input = input.reshape(1, 3, 640, 640).astype("float32")
+        input = input / 255.0
+        return input , img_width, img_height
+
+    def postprocess(self, img, outputs, img_width, img_height):
+        output0 = outputs[0]
+        output1 = outputs[1]
+
+        output0 = output0[0].transpose()
+        output1 = output1[0]
+
+        boxes = output0[:, 0:56]
+        masks = output0[:, 56:]
+
+        output1 = output1.reshape(32, 160 * 160)
+        print(masks.shape, output1.shape)
+
+        # Join matrices by matrix multiplication
+        masks = masks @ output1
+        print(masks.shape)
+
+        # Connect masks to boxes: move all columns from masks matrix to the right of boxes matrix
+        boxes = np.hstack([boxes, masks])
+        print(boxes.shape)
+
+        # parse and filter all boxes
+        objects = []
+        for row in boxes:
+            xc, yc, w, h = row[:4]
+            x1 = (xc - w / 2) / 640 * img_width
+            y1 = (yc - h / 2) / 640 * img_height
+            x2 = (xc + w / 2) / 640 * img_width
+            y2 = (yc + h / 2) / 640 * img_height
+            # x1 = xc - w / 2
+            # y1 = yc - h / 2
+            # x2 = xc + w / 2
+            # y2 = yc + h / 2
+
+            prob = row[4:56].max()
+            if prob < 0.5:
+                continue
+            class_id = row[4:56].argmax()
+            label = self.yolo_classes[class_id]
 
 
-        print("bbox ",bbox[0])
-        print("class_probs ",class_probs[0] , "len ",len(class_probs[0]))
-        print("mask_coeffs ",mask_coeffs[0] , "len ",len(mask_coeffs[0]))
+            mask = self.get_mask(row[56:25684], (x1, y1, x2, y2), img_width, img_height)
+            polygon = self.get_polygon(mask)
+            objects.append([x1, y1, x2, y2, label, prob, mask, polygon])
+
+        # apply non-maximum suppression
+        objects.sort(key=lambda x: x[5], reverse=True)
+        result = []
+        while len(objects) > 0:
+            result.append(objects[0])
+            objects = [object for object in objects if self.iou(object, objects[0]) < 0.7]
+
+        print("len result ",len(result))
+        print("result ",result)
+
+        # display bounding polygons of detected objects
+        # on the image
+        # img = Image.open(img_name)
+        draw = ImageDraw.Draw(img, "RGBA")
 
         teeth_list = []
 
-        print("preds shape len = ",preds.shape[0])
+        for object in result:
+            [x1, y1, x2, y2, label, prob, mask, polygon] = object
+            # move polygon from (0,0) to the top left point of detected object
+            print("poligon nescalat tupluri")
+            print(polygon)
+            polygon = [(round(x1 + point[0]), round(y1 + point[1])) for point in polygon]
 
-        teeth_dict = {}
+            #polygon = self.scale_polygon_to_640(polygon,img_width,img_height)
 
-        # Iterează prin toate predicțiile
-        for i in range(preds.shape[0]):
+            draw.polygon(polygon, fill=(0, 255, 0, 125))
 
-            # Extrage probabilitățile pentru fiecare clasă
-            class_probs_i = class_probs[i]
+            print("poligon nescalat liste ", polygon)
 
-            # Caută probabilitatea maximă și clasa asociată
-            max_class_prob = np.max(class_probs_i)
-            class_id = np.argmax(class_probs_i)
+            teeth = Teeth(name = label, polygon = polygon)
 
-            # Adaugă un tuplu cu (indice predicție, probabilitate maximă) în dicționar
-            if class_id not in teeth_dict:
-                teeth_dict[class_id] = [(i, max_class_prob)]  # Inițializează lista cu primul tuplu
-            else:
-                teeth_dict[class_id].append((i, max_class_prob))  # Adaugă tuplu la lista existentă
+            teeth_list.append(teeth)
 
-        # Filtrează dictionarul pentru a păstra doar tuplul cu probabilitatea maximă pentru fiecare clasă
-        for class_id in teeth_dict:
-            # Obține lista de tupluri pentru clasa respectivă
-            prediction_list = teeth_dict[class_id]
+            print(teeth)
 
-            # Alege tuplul cu probabilitatea maximă
-            best_prediction = max(prediction_list, key=lambda x: x[1])
-
-            # Actualizează în dictionar pentru fiecare clasă cu tuplul cu probabilitatea maximă
-            teeth_dict[class_id] = best_prediction
-
-        print("teeth dict ", teeth_dict)
-
-
-        for class_id in list(teeth_dict.keys()):  # Iterează printr-o copie a cheilor pentru a evita erori în timp ce modifici dicționarul
-
-            val = teeth_dict[class_id]
-
-            # Verifică dacă probabilitatea maximă este mai mare sau egală cu 0.3
-            if val[1] < conf_thres:
-                # Dacă probabilitatea este mai mică decât 0.3, elimină clasa din dicționar
-                del teeth_dict[class_id]
-
-
-        print(sorted(teeth_dict.keys()))
+        img.show()
 
         return teeth_list
-        # for i in range(preds.shape[0]):
-        #
-        #         x1, y1, x2, y2 = bbox[i]
-        #         class_probs_i = class_probs[i]
-        #         class_id = int(np.argmax(class_probs_i))  # <- ia clasa cu cea mai mare probabilitate
-        #
-        #
-        #         # Caută probabilitatea maximă și clasa asociată
-        #         max_class_prob = np.max(class_probs_i)
-        #         class_id = np.argmax(class_probs_i)
-        #
-        #         # Setează un prag de confidență, de exemplu 0.5
-        #
-        #         if not teeth_dict[str(class_id)]:
-        #             teeth_dict[str(class_id)] = [max_class_prob]
-        #         else:
-        #             teeth_dict[str(class_id)].append(max_class_prob)
-        #
-        #         #object_confidence = preds[i, 4]  # Probabilitatea obiectului (fără clasa)
-        #         #print("obj_conf ",object_confidence)
-        #         if max_class_prob > conf_thres:
-        #             print("conf = ", max_class_prob)
-        #             print("class_id ", class_id)
-        #             coeffs = mask_coeffs[i]
-        #             # print("coeffs ",coeffs)
-        #
-        #             mask = np.dot(coeffs, mask_protos.reshape(mask_protos.shape[0], -1))
-        #             # print("mask1 ",mask)
-        #             mask = mask.reshape(mask_protos.shape[1], mask_protos.shape[2])
-        #             mask = cv2.resize(mask, (640, 640))
-        #             mask = (mask > 0.5).astype(np.uint8)
-        #             mask = cv2.resize(mask, (orig_w, orig_h))
-        #
-        #             x1_int, y1_int, x2_int, y2_int = map(int, [x1 / 640 * orig_w, y1 / 640 * orig_h, x2 / 640 * orig_w,
-        #                                                        y2 / 640 * orig_h])
-        #             mask_cropped = mask[y1_int:y2_int, x1_int:x2_int]
-        #
-        #             contours, _ = cv2.findContours(mask_cropped, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        #
-        #             if contours:
-        #                 polygon = max(contours, key=cv2.contourArea).squeeze().tolist()
-        #                 if isinstance(polygon[0], list):
-        #                     polygon = [[p[0] + x1_int, p[1] + y1_int] for p in polygon]
-        #                 else:
-        #                     polygon = [polygon[0] + x1_int, polygon[1] + y1_int]
-        #             else:
-        #                 polygon = []
-        #
-        #             tooth = Teeth(name=class_id, polygon=polygon)
-        #             teeth_list.append(tooth)
+
+
+
 
 
 
     def detect_teeths(self, image):
 
         print("detect_teeths")
-        input_tensor, orig_w, orig_h = self.preprocess(image)
+        input , img_width, img_height = self.preprocess(image)
 
-        print("input_tensor ",input_tensor)
+        print("input_tensor ",input)
 
-        outputs = self.session.run(self.output_names, {self.input_name: input_tensor})
+        outputs = self.session.run(None, {"images":input})
 
         print("outputs ", outputs)
-        teeth_list = self.postprocess(outputs, orig_w, orig_h)
-        #print("teeth_list detector ", teeth_list)
-        return teeth_list
+        return self.postprocess(image ,outputs, img_width, img_height), img_width, img_height
+

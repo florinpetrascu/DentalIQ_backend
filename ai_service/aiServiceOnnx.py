@@ -1,10 +1,13 @@
 
 
+
 from domain.issue import Issue
 
 from PIL import Image
 from shapely.geometry import Polygon, Point , LineString
+
 import numpy as np
+
 from ai_service.teethDetectorOnnx import  TeethDetectorONNX
 from ai_service.issueDetectorOnnx import IssueDetectorONNX
 class AiServiceOnnx:
@@ -137,7 +140,7 @@ class AiServiceOnnx:
 
     def scale_polygon_to_640(self, polygon, img_width, img_height):
         scale_x = 640 / img_width
-        scale_y = 360 / img_height
+        scale_y = 340 / img_height
         scaled_polygon = [(int(x * scale_x), int(y * scale_y)) for (x, y) in polygon]
         return scaled_polygon
 
@@ -163,6 +166,11 @@ class AiServiceOnnx:
 
         for teeth in teeth_list_onnx:
             teeth.polygon = self.scale_polygon_to_640(teeth.polygon,img_width,img_height)
+
+            teeth.polygon =  [list(point) for point in teeth.polygon]
+            # Conversie în listă de tupluri
+
+
 
 
         print("*************** final **************")

@@ -7,8 +7,13 @@ from fastapi.middleware.cors import CORSMiddleware
 
 # de modificat aici pentru deploy!!!!!
 from controller.radiographyController import router as radiography_router
-from controller.patientController import  router as patient_router
+from controller.patientController import router as patient_router
 from controller.aiTasksController import router as ai_router
+
+# from radiographyController import router as radiography_router
+# from patientController import router as patient_router
+# from aiTasksController import router as ai_router
+
 # FastAPI app
 app = FastAPI()
 

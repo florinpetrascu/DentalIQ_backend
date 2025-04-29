@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 
-from ai_service.aiService import AiService
+#from ai_service.aiService import AiService
+from ai_service.aiServiceOnnx import AiServiceOnnx
 from repository.issueRepo import IssuesRepo
 from repository.radiographyRepo import RadiographyRepo
 from repository.toothRepo import TeethRepo
@@ -21,7 +22,8 @@ def get_ai_tasks_service(db: Session = Depends(get_db)) -> AiTasksService:
     tooth_repo = TeethRepo(db)
     issue_repo = IssuesRepo(db)
     radiography_repo = RadiographyRepo(db)
-    ai_service = AiService("teeth_model.pt","issues_model.pt")
+    ai_service = AiServiceOnnx("teeth_model.onnx","issues_model.onnx")
+    #ai_service = AiService("teeth_model.pt", "issues_model.pt")
 
     return AiTasksService(ai_service,patient_repo,tooth_repo,issue_repo,radiography_repo)
 
@@ -44,6 +46,8 @@ async def analyse_image(patient: dict, service: AiTasksService = Depends(get_ai_
         print("aici1")
         # Apelează serviciul pentru procesarea imaginii (detecția dinților)
         patient = service.analyse_panoramic_xray(image,patient_data['id'])
+        print("Patient inainte de dto")
+        print(patient.teeths)
         print("aici2")
         patientDTO = get_patient_dto(patient)
 
