@@ -21,11 +21,12 @@ app = FastAPI()
 origins = [
     "http://localhost:3000",  # local
     "https://dental-iq-frontend.vercel.app"  # Vercel frontend
+
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  # sau ["*"] pentru orice (nu recomandat în producție)
+    allow_origins=["*"],  # sau ["*"] pentru orice (nu recomandat în producție)
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
