@@ -1,3 +1,4 @@
 *.pt filter=lfs diff=lfs merge=lfs -text
 controller/issues_model.onnx filter=lfs diff=lfs merge=lfs -text
 controller/teeth_model.onnx filter=lfs diff=lfs merge=lfs -text
+*.onnx filter=lfs diff=lfs merge=lfs -text
