@@ -3,7 +3,7 @@ import onnxruntime as ort
 import numpy as np
 
 from domain.issue import Issue
-
+import gc
 from PIL import ImageDraw
 class IssueDetectorONNX:
     def __init__(self, model_path):
@@ -138,6 +138,9 @@ class IssueDetectorONNX:
 
         outputs = self.session.run(None, {"images": input})
 
+        del input
+        # Eliberăm memoria ocupată de input_tensor
+        gc.collect()
         print("outputs ", outputs)
         return self.postprocess(image, outputs, img_width, img_height)
 

@@ -4,7 +4,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 import cv2
 from domain.teeth import Teeth
-
+import gc
 class TeethDetectorONNX:
     def __init__(self, model_path):
         self.session = ort.InferenceSession(model_path)
@@ -182,6 +182,11 @@ class TeethDetectorONNX:
         print("input_tensor ",input)
 
         outputs = self.session.run(None, {"images":input})
+
+        del input
+        # Eliberăm memoria ocupată de input_tensor
+
+        gc.collect()
 
         print("outputs ", outputs)
         return self.postprocess(image ,outputs, img_width, img_height), img_width, img_height
