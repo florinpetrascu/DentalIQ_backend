@@ -137,10 +137,12 @@ class IssueDetectorONNX:
         print("input_tensor ", input)
 
         outputs = self.session.run(None, {"images": input})
-
+        print("Inferenta ISSUES facuta cu success_1")
         del input
         # Eliberăm memoria ocupată de input_tensor
         gc.collect()
         print("outputs ", outputs)
+        print("Inferenta ISSUES facuta cu success_2")
+
         return self.postprocess(image, outputs, img_width, img_height)
 

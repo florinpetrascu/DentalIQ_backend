@@ -182,12 +182,12 @@ class TeethDetectorONNX:
         print("input_tensor ",input)
 
         outputs = self.session.run(None, {"images":input})
-
+        print("Inferenta TEETH facuta cu success_1")
         del input
         # Eliberăm memoria ocupată de input_tensor
 
         gc.collect()
-
+        print("Inferenta TEETH facuta cu success_2")
         print("outputs ", outputs)
         return self.postprocess(image ,outputs, img_width, img_height), img_width, img_height
 
