@@ -131,3 +131,27 @@ ADD CONSTRAINT fk_issues_teeth
 FOREIGN KEY (teeth_id)
 REFERENCES teeth(id)
 ON DELETE CASCADE;
+
+ALTER TABLE teeth
+ADD CONSTRAINT fk_teeth_patient
+FOREIGN KEY (patient_id)
+REFERENCES patients(id)
+ON DELETE CASCADE;
+
+ALTER TABLE radiographs
+ADD CONSTRAINT fk_radiographs_patient
+FOREIGN KEY (patient_id)
+REFERENCES patients(id)
+ON DELETE CASCADE;
+
+-- Creem tabela de medici
+
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    nume TEXT,
+    prenume TEXT,
+    username TEXT UNIQUE,
+    hashed_password TEXT,
+    email TEXT,
+    activ BOOLEAN
+);

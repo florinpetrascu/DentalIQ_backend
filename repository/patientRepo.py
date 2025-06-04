@@ -43,6 +43,8 @@ class PatientRepo:
             self.session.delete(patient)
             self.session.commit()
 
+        return patient
+
     # Metoda find_all pentru a obține toți pacienții
     def find_all(self):
         return self.session.query(Patient).all()  # Returnează o listă cu toți pacienții

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 
-#from ai_service.aiService import AiService
+from ai_service.aiService import AiService
 from ai_service.aiServiceOnnx import AiServiceOnnx
 from repository.issueRepo import IssuesRepo
 from repository.radiographyRepo import RadiographyRepo
@@ -22,8 +22,8 @@ def get_ai_tasks_service(db: Session = Depends(get_db)) -> AiTasksService:
     tooth_repo = TeethRepo(db)
     issue_repo = IssuesRepo(db)
     radiography_repo = RadiographyRepo(db)
-    ai_service = AiServiceOnnx("teeth_model.onnx","issues_model.onnx")
-    #ai_service = AiService("teeth_model.pt", "issues_model.pt")
+    #ai_service = AiServiceOnnx("teeth_model.onnx","issues_model.onnx")
+    ai_service = AiService("teeth_model.pt", "issues_model.pt")
 
     return AiTasksService(ai_service,patient_repo,tooth_repo,issue_repo,radiography_repo)
 

@@ -15,3 +15,6 @@ class PatientService:
 
     def get_patient_by_id(self,patient_id):
         return self.patientRepo.get_patient_by_id(patient_id)
+
+    def delete_patient_by_id(self,patient_id):
+        return self.patientRepo.delete_patient(patient_id)

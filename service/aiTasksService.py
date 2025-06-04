@@ -50,6 +50,8 @@ class AiTasksService:
         #aplicam AI pe imagine si obtinem lista de dinti
         teeth_list = self.aiService.get_teeths(image)
 
+        print("from service ", teeth_list)
+
         #stergem dintii acestui pacient
         self.toothRepo.delete_by_patient_id(patient_id)
 

@@ -7,7 +7,11 @@ from repository.patientRepo import PatientRepo
 from database.base import get_db
 from sqlalchemy.orm import Session
 from models_provider.download_models import download_file
+from typing import Annotated
+from auth.auth_provider import get_current_active_user, User
 import os
+
+
 router = APIRouter(prefix="/api/patients", tags=["Patients"])
 def get_patient_service(db: Session = Depends(get_db)) -> PatientService:
     repo = PatientRepo(db)
@@ -15,7 +19,10 @@ def get_patient_service(db: Session = Depends(get_db)) -> PatientService:
 
 
 @router.get("/")
-def get_all_patients( service: PatientService = Depends(get_patient_service)):
+async def get_all_patients(
+    current_user: Annotated[User, Depends(get_current_active_user)],
+    service: PatientService = Depends(get_patient_service),
+    ):
 
     # Serializare manuală
     result = service.get_all_patients()
@@ -28,7 +35,7 @@ async def upload_patient(patientDTO: dict,  service: PatientService = Depends(ge
 
     #descarcare onnx files
 
-    load_models()
+    #load_models()
 
 
     #patient = Patient("nan", patientDTO['firstName'], patientDTO['lastName'], patientDTO['phoneNumber'])
@@ -40,6 +47,21 @@ async def upload_patient(patientDTO: dict,  service: PatientService = Depends(ge
     return JSONResponse(content=newPatientDTO)
 
     #return patient
+
+@router.delete("/{patient_id}")
+def delete_patient(patient_id: int, service: PatientService = Depends(get_patient_service)):
+
+    patient = service.delete_patient_by_id(patient_id)
+    if not patient:
+        print("Eroare aici")
+        raise HTTPException(status_code=404, detail="Patient not found")
+
+    patientDTO = get_patient_dto(patient)
+
+    print(patientDTO)
+
+    return JSONResponse(content=patientDTO)
+
 
 @router.get("/{patient_id}")
 def get_patient(patient_id: int, service: PatientService = Depends(get_patient_service)):
