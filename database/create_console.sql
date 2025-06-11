@@ -144,6 +144,16 @@ FOREIGN KEY (patient_id)
 REFERENCES patients(id)
 ON DELETE CASCADE;
 
+ALTER TABLE patients
+ADD COLUMN user_id integer;
+
+
+ALTER TABLE patients
+ADD CONSTRAINT fk_patients_user
+FOREIGN KEY (user_id)
+REFERENCES users(id)
+ON DELETE CASCADE;
+
 -- Creem tabela de medici
 
 CREATE TABLE users (

@@ -4,7 +4,7 @@ from firebase_admin import credentials, firestore, storage
 
 # Calea către fișierul de autentificare
 base_dir = os.path.dirname(os.path.abspath(__file__))
-cred_path = os.path.join(base_dir, 'dentaliq-api-firebase-adminsdk-fbsvc-b4bc3a4254.json')
+cred_path = os.path.join(base_dir, 'dentaliq-api-firebase-adminsdk-fbsvc-f9d1a4b474.json')
 
 # Inițializare o singură dată
 if not firebase_admin._apps:

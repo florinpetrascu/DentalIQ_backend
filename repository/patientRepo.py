@@ -16,7 +16,6 @@ class PatientRepo:
 
         self.session.add(new_patient)
         self.session.commit()
-
         return new_patient
 
     def get_patient_by_id(self, patient_id):

@@ -15,6 +15,8 @@ import io
 import base64
 from PIL import Image
 from dto_utils.dto_utils import get_patient_dto
+from typing import Annotated
+from auth.auth_provider import get_current_active_user, User
 
 router = APIRouter(prefix="/api/ai", tags=["Ai"])
 def get_ai_tasks_service(db: Session = Depends(get_db)) -> AiTasksService:
@@ -29,11 +31,13 @@ def get_ai_tasks_service(db: Session = Depends(get_db)) -> AiTasksService:
 
 
 @router.post("/analyse")
-async def analyse_image(patient: dict, service: AiTasksService = Depends(get_ai_tasks_service)):
+async def analyse_image(
+        current_user: Annotated[User, Depends(get_current_active_user)],
+        patient: dict, service: AiTasksService = Depends(get_ai_tasks_service)):
     try:
         # Extrage datele pacientului și imaginea din JSON
         patient_data = patient.get("patient_data")
-        print('patient_data ', patient_data)
+        #print('patient_data ', patient_data)
         image_base64 = patient.get("image")
 
         if not image_base64:
@@ -46,9 +50,9 @@ async def analyse_image(patient: dict, service: AiTasksService = Depends(get_ai_
         print("aici1")
         # Apelează serviciul pentru procesarea imaginii (detecția dinților)
         patient = service.analyse_panoramic_xray(image,patient_data['id'])
-        print("Patient inainte de dto")
-        print(patient.teeths)
-        print("aici2")
+        #print("Patient inainte de dto")
+        #print(patient.teeths)
+        #print("aici2")
         patientDTO = get_patient_dto(patient)
 
         print(patientDTO)

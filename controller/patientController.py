@@ -24,6 +24,8 @@ async def get_all_patients(
     service: PatientService = Depends(get_patient_service),
     ):
 
+
+
     # Serializare manuală
     result = service.get_all_patients()
 
@@ -72,7 +74,7 @@ def get_patient(patient_id: int, service: PatientService = Depends(get_patient_s
 
     patientDTO = get_patient_dto(patient)
 
-    print(patientDTO)
+    #print(patientDTO)
 
     return JSONResponse(content=patientDTO)
 

@@ -16,3 +16,14 @@ db.sqlite3
 # Ignorăm fișiere temporare de IDE
 .idea/
 .vscode/
+login_db.py
+convertModel.py
+issues_model.pt
+teeth_model.pt
+password_cripter.py
+processed_image.jpg
+domain_f
+controller/firebaseController.py
+ai_service/issueDetectorOnnx.py
+ai_service/teethDetectorOnnx.py
+ai_service/aiServiceOnnx.py
