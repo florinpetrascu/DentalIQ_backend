@@ -27,3 +27,4 @@ controller/firebaseController.py
 ai_service/issueDetectorOnnx.py
 ai_service/teethDetectorOnnx.py
 ai_service/aiServiceOnnx.py
+database/dentaliq-api-firebase-adminsdk-fbsvc-f9d1a4b474.json
